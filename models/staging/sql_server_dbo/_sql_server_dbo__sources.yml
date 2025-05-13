@@ -1,0 +1,133 @@
+version: 2
+
+sources:
+
+  - name: sql_server_dbo # name of the source 
+    schema: sql_server_dbo # this is the schema our raw data lives in
+    database: "ALVAROLOPEZ_DEV_BRONZE_DB" # this is the name of our database
+
+    quoting:
+      database: false
+      schema: false
+      identifier: false
+
+    freshness:
+      warn_after: {count: 240, period: day}
+      error_after: {count: 480, period: day}
+
+    tables:
+      - name: events
+        description: >
+          Data about events in the platform of demo.
+        columns:
+          - name: event_id
+            description: >
+              UUID of each unique event on the platform.
+            tests:
+              - not_null
+              - unique
+          - name: session_id
+            description: >
+              UUID of each browsing session on the platform which can contain many events.
+            tests:
+              - not_null
+          - name: user_id
+            description: >
+              UUID of the user that this event is associated with.
+            tests:
+              - not_null
+          - name: page_url
+            description: >
+              URL that the event happened on.
+            tests:
+              - not_null
+          - name: created_at
+            description: >
+              Timestamp of the event (UTC).
+            tests:
+              - not_null
+          - name: event_type
+            description: >
+              Type of event.
+            tests:
+              - not_null
+          - name: order_id
+            description: >
+              If the event is specific to an order (mostly used for checkout).
+          - name: product_id
+            description: >
+              If the event is specific to a product.
+          - name: _fivetran_synced
+            description: >
+              Date that the data was loaded.
+            tests:
+              - not_null
+      
+      
+      - name: users
+        loaded_at_field: _fivetran_synced
+        columns:
+          - name: user_id 
+            description: Primary key for users.
+            tests:
+              - unique
+              - not_null
+          - name: address_id
+            tests:
+              - not_null
+          - name: first_name
+            tests:
+              - not_null
+          - name: last_name
+            tests:
+              - not_null
+          - name: email
+            tests:
+              - not_null
+              - unique
+          - name: phone_number
+            tests:
+              - not_null
+          - name: created_at_utc
+          - name: updated_at_utc
+
+
+      - name: orders
+        description: Staged order data from our jaffle shop app.
+        loaded_at_field: _fivetran_synced
+        columns:
+          - name: order_id 
+            description: Primary key for orders.
+            tests:
+              - unique
+              - not_null
+          - name: user_id
+            description: >
+              ID corresponding to the user that has placed the order.
+            tests:
+              - not_null
+              #- relationships:
+              #    to: source('sql_server_db','users')
+              #    field: user_id
+          - name: promo_id
+            description: ID corresponding to the promotion of the placed order.
+            tests:
+              - not_null
+          - name: address_id
+            tests:
+              - not_null
+          - name: created_at_utc
+          - name: updated_at_utc
+          - name: item_order_cost_usd
+          - name: shipping_cost_usd
+          - name: total_order_cost_usd
+          - name: tracking_id
+            tests:
+              - not_null
+          - name: shipping_service
+            tests:
+              - not_null
+          - name: estimated_delivery_at_utc
+          - name: delivered_at_utc
+          - name: status_order
+            description: '{{ doc("order_status") }}'
