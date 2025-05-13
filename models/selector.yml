@@ -1,0 +1,9 @@
+selectors:
+  - name: exclude_old_versions
+    default: "{{ target.name == 'dev' }}"
+    definition:
+      method: fqn
+      value: "*"
+      exclude:
+        - method: version
+          value: old
