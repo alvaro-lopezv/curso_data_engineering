@@ -22,6 +22,7 @@ sources:
         loaded_at_field: _fivetran_synced
         description: >
           Data about budget in demo.
+        
         columns:
           - name: _row
             description: >
@@ -48,6 +49,7 @@ sources:
             tests:
               - not_null
           - name: _fivetran_synced
+            quote: true
             description: >
               Date that the data was loaded.
             tests:
